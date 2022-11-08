@@ -15,7 +15,7 @@ Want to use [Wooks Composables](https://github.com/wooksjs/composables) but your
 
 ## Install
 
-`npm install @wooksjs/express-adapter`
+`npm install @wooksjs/express-adapter @wooksjs/composables`
 
 ## Usage
 
