@@ -20,6 +20,7 @@ Want to use [Wooks Composables](https://github.com/wooksjs/composables) but your
 ## Usage
 
 ```ts
+import express from 'express'
 import { applyExpressAdapter } from '@wooksjs/express-adapter'
 import { useBody } from '@wooksjs/body'
 import { useRouteParams, WooksError } from '@wooksjs/composables'
