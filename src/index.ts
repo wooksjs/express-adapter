@@ -4,7 +4,7 @@ import { Express } from 'express'
 import { IncomingMessage, ServerResponse } from 'http'
 
 const methods = [
-    'get', 'post', 'delete', 'patch', 'options',
+    'get', 'post', 'delete', 'put', 'patch', 'options', 'head', 'all',
 ]
 
 export function applyExpressAdapter(app: Express) {
@@ -16,9 +16,10 @@ export function applyExpressAdapter(app: Express) {
             try {
                 const result = await fn()
                 restoreCtx()
-                responder.respond(result)
+                await responder.respond(result)
             } catch (e) {
-                responder.respond(e)
+                restoreCtx()
+                await responder.respond(e)
             }
             clearCtx()
         }
