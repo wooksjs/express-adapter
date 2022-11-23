@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createWooksCtx, createWooksResponder, useWooksCtx } from '@wooksjs/composables'
-import { Express } from 'express'
-import { IncomingMessage, ServerResponse } from 'http'
+import { createHttpContext, createWooksResponder, useHttpContext } from '@wooksjs/event-http'
+import { Express, Request } from 'express'
+import { ServerResponse } from 'http'
 
 const methods = [
     'get', 'post', 'delete', 'put', 'patch', 'options', 'head', 'all',
@@ -12,7 +12,7 @@ export function applyExpressAdapter(app: Express) {
 
     function useWooksDecorator(fn: () => unknown) {
         return async () => {
-            const { restoreCtx, clearCtx } = useWooksCtx()
+            const { restoreCtx, clearCtx } = useHttpContext()
             try {
                 const result = await fn()
                 restoreCtx()
@@ -37,7 +37,12 @@ export function applyExpressAdapter(app: Express) {
     }
 }
 
-function wooksContext(req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) {
-    createWooksCtx({ req, res })
+function wooksContext(req: Request, res: ServerResponse, next: (err?: unknown) => void) {
+    const { store } = createHttpContext({ req, res })
+    store('routeParams').value = new Proxy({}, {
+        get(target, prop, receiver) {
+            return req.params && req.params[prop as keyof typeof req.params]
+        },
+    })
     next()
 }

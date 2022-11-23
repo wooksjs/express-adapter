@@ -9,29 +9,28 @@
 </a>
 </p>
 
-Want to use [Wooks Composables](https://github.com/wooksjs/composables) but your project is coupled with express? ✅ This is not a problem with this Express Adapter for [Wooks Composables](https://github.com/wooksjs/composables)
-
-🔥 Get power of [Wooks Composables](https://github.com/wooksjs/composables) in your express project!
+Want to use [@wooksjs/event-http](https://www.npmjs.com/package/@wooksjs/event-http) but your project is coupled with express? ✅ This is not a problem with this Express Adapter for [wooks](https://www.npmjs.com/package/wooks)
 
 ## Install
 
-`npm install @wooksjs/express-adapter @wooksjs/composables`
+`npm install @wooksjs/express-adapter @wooksjs/event-http`
 
 ## Usage
 
 ```ts
 import express from 'express'
 import { applyExpressAdapter } from '@wooksjs/express-adapter'
-import { useBody } from '@wooksjs/body'
-import { useRouteParams, WooksError } from '@wooksjs/composables'
+import { useBody } from '@wooksjs/http-body'
+import { WooksError } from '@wooksjs/event-http'
+import { useRouteParams } = from '@wooksjs/event-core'
 
 const app = express()
 
 applyExpressAdapter(app)
 
 app.get('/test/:param', () => {
-    const { getRouteParam } = useRouteParams()
-    return { message: 'it works', param: getRouteParam('param') }
+    const { get } = useRouteParams()
+    return { message: 'it works', param: get('param') }
 })
 
 app.post('/post', () => {
