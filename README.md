@@ -21,8 +21,8 @@ Want to use [@wooksjs/event-http](https://www.npmjs.com/package/@wooksjs/event-h
 import express from 'express'
 import { applyExpressAdapter } from '@wooksjs/express-adapter'
 import { useBody } from '@wooksjs/http-body'
-import { WooksError } from '@wooksjs/event-http'
-import { useRouteParams } = from '@wooksjs/event-core'
+import { HttpError } from '@wooksjs/event-http'
+import { useRouteParams } from '@wooksjs/event-core'
 
 const app = express()
 
@@ -39,7 +39,7 @@ app.post('/post', () => {
 })
 
 app.get('/error', () => {
-    throw new WooksError(400, 'test error')
+    throw new HttpError(400, 'test error')
 })
 
 app.listen(3000, () => console.log('listening 3000'))
