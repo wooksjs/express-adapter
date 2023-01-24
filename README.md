@@ -3,7 +3,7 @@
 **!!! This is work-in-progress library, breaking changes are expected !!!**
 
 <p align="center">
-<img src="./docs/wooks-logo.png" height="156px"><br>
+<img src="./docs/wooksjs-express.png" height="156px"><br>
 <a  href="https://github.com/wooksjs/express-adapter/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
 </a>
