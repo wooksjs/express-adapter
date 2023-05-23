@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createHttpContext, createWooksResponder, useHttpContext } from '@wooksjs/event-http'
+import { TWooksHttpOptions, createHttpContext, createWooksResponder, useHttpContext } from '@wooksjs/event-http'
 import { Express, Request } from 'express'
 import { ServerResponse } from 'http'
 
@@ -7,7 +7,7 @@ const methods = [
     'get', 'post', 'delete', 'put', 'patch', 'options', 'head', 'all',
 ]
 
-export function applyExpressAdapter(app: Express) {
+export function applyExpressAdapter(app: Express, eventOptions?: TWooksHttpOptions['eventOptions']) {
     const responder = createWooksResponder()
 
     function useWooksDecorator(fn: () => unknown) {
@@ -25,7 +25,7 @@ export function applyExpressAdapter(app: Express) {
         }
     }
 
-    app.use(wooksContext)
+    app.use(wooksContext(eventOptions))
 
     for (const m of methods) {
         const defFn: (...args: any[]) => void = (app[m as keyof Express] as (...args: any[]) => void).bind(app)
@@ -37,12 +37,14 @@ export function applyExpressAdapter(app: Express) {
     }
 }
 
-function wooksContext(req: Request, res: ServerResponse, next: (err?: unknown) => void) {
-    const { store } = createHttpContext({ req, res })
-    store('routeParams').value = new Proxy({}, {
-        get(target, prop, receiver) {
-            return req.params && req.params[prop as keyof typeof req.params]
-        },
-    })
-    next()
+function wooksContext(eventOptions?: TWooksHttpOptions['eventOptions']) {
+    return (req: Request, res: ServerResponse, next: (err?: unknown) => void) => {
+        const { store } = createHttpContext({ req, res }, eventOptions || {})
+        store('routeParams').value = new Proxy({}, {
+            get(target, prop, receiver) {
+                return req.params && req.params[prop as keyof typeof req.params]
+            },
+        })
+        next()
+    }
 }

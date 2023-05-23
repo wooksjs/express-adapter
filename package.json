@@ -59,7 +59,8 @@
   },
   "homepage": "https://github.com/wooksjs/express-adapter#readme",
   "peerDependencies": {
-    "@wooksjs/event-http": "^0.2.9",
+    "@wooksjs/event-http": "^0.3.0",
+    "wooks": "^0.3.0",
     "express": "^4.0.0"
   },
   "devDependencies": {
@@ -69,8 +70,8 @@
     "@types/node": "^18.11.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "@wooksjs/event-http": "^0.2.9",
-    "@wooksjs/http-body": "^0.2.9",
+    "@wooksjs/event-http": "^0.3.0",
+    "@wooksjs/http-body": "^0.3.0",
     "conventional-changelog": "^3.1.24",
     "conventional-changelog-cli": "^2.1.1",
     "enquirer": "^2.3.6",

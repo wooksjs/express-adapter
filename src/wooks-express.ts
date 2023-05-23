@@ -1,10 +1,11 @@
-import { createHttpContext, HttpError, WooksHttp } from '@wooksjs/event-http'
+import { createHttpContext, HttpError, TWooksHttpOptions, WooksHttp } from '@wooksjs/event-http'
 import Express from 'express'
 import { IncomingMessage, Server, ServerResponse } from 'http'
+import { TWooksHandler } from 'wooks'
 
 export class WooksExpress extends WooksHttp {
-    constructor(protected expressApp: Express.Application, protected opts?: { raise404?: boolean }) {
-        super()
+    constructor(protected expressApp: Express.Application, protected opts?: TWooksHttpOptions & { raise404?: boolean}) {
+        super(opts)
         expressApp.use(this.getServerCb() as unknown as () => Express.RequestHandler)
     }
 
@@ -18,11 +19,14 @@ export class WooksExpress extends WooksHttp {
 
     getServerCb() {
         return async (req: IncomingMessage, res: ServerResponse, next?: Express.NextFunction) => {
-            const { restoreCtx, clearCtx } = createHttpContext({ req, res })
-            const handlers = this.wooks.lookup(req.method as string, req.url as string)
-            if (handlers) {
+            const { restoreCtx, clearCtx } = createHttpContext(
+                { req, res },
+                this.mergeEventOptions(this.opts?.eventOptions),
+            )
+            const { handlers } = this.wooks.lookup(req.method as string, req.url as string)
+            if (handlers || this.opts?.onNotFound) {
                 try {
-                    await this.processHandlers(handlers)
+                    await this.processHandlers(handlers || [this.opts?.onNotFound as TWooksHandler])
                 } catch (e) {
                     console.error('Internal error, please report: ', e as Error)
                     if ((e as Error).stack) {
@@ -34,6 +38,11 @@ export class WooksExpress extends WooksHttp {
                 }
             } else {
                 // not found
+                this.logger.debug(
+                    `404 Not found (${req.method as string})${
+                        req.url as string
+                    }`
+                )
                 if (this.opts?.raise404) {
                     this.respond(new HttpError(404))
                     clearCtx()

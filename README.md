@@ -59,7 +59,7 @@ import { useBody } from '@wooksjs/http-body'
 import { HttpError } from '@wooksjs/event-http'
 import { useRouteParams } from '@wooksjs/event-core'
 
-const expressApp = Express()
+const expressApp = express()
 
 const wooksApp = new WooksExpress(expressApp, { raise404: true })
 
@@ -79,3 +79,6 @@ wooksApp.get('/error', () => {
 
 wooksApp.listen(3000, () => console.log('listening 3000'))
 ```
+
+
+⚠️ Check out official [wooks documentation](https://wooksjs.org/guide/http/express.html).
