@@ -9,7 +9,7 @@ export class WooksExpress extends WooksHttp {
         expressApp.use(this.getServerCb() as unknown as () => Express.RequestHandler)
     }
 
-    public async listen(...args: Parameters<Server['listen']>) {
+    public listen(...args: Parameters<Server['listen']>) {
         const server = this.server = this.expressApp.listen(...args)
         return new Promise((resolve, reject) => {
             server.once('listening', resolve)
