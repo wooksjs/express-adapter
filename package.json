@@ -1,6 +1,6 @@
 {
   "name": "@wooksjs/express-adapter",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "Express Adapter for Wooks Composables",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",

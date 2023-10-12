@@ -1,3 +1,12 @@
+## [0.4.8](https://github.com/wooksjs/express-adapter/compare/v0.3.0...v0.4.8) (2023-10-12)
+
+
+### Bug Fixes
+
+* remove async ([c6ef71a](https://github.com/wooksjs/express-adapter/commit/c6ef71ac174b03c6bfe464be2172f38eba27b927))
+
+
+
 # [0.3.0](https://github.com/wooksjs/express-adapter/compare/v0.2.1...v0.3.0) (2023-05-23)
 
 
