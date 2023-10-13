@@ -1,3 +1,12 @@
+## [0.4.9](https://github.com/wooksjs/express-adapter/compare/v0.4.8...v0.4.9) (2023-10-13)
+
+
+### Bug Fixes
+
+* fix exports ([aa7b4fe](https://github.com/wooksjs/express-adapter/commit/aa7b4fef35ab623f3dd9eb57ae3a51441c0bd56a))
+
+
+
 ## [0.4.8](https://github.com/wooksjs/express-adapter/compare/v0.3.0...v0.4.8) (2023-10-12)
 
 
