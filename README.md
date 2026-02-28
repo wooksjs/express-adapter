@@ -1,6 +1,4 @@
-# Express Adapter (Wooks Composables)
-
-**!!! This is work-in-progress library, breaking changes are expected !!!**
+# @wooksjs/express-adapter
 
 <p align="center">
 <img src="./docs/wooksjs-express.png" height="156px"><br>
@@ -9,76 +7,167 @@
 </a>
 </p>
 
-Want to use [@wooksjs/event-http](https://www.npmjs.com/package/@wooksjs/event-http) but your project is coupled with express? ✅ This is not a problem with this Express Adapter for [wooks](https://www.npmjs.com/package/wooks)
+Use [Wooks](https://wooks.moost.org) composables with [Express](https://expressjs.com). This adapter lets you register Wooks-style route handlers on top of an existing Express app — unmatched requests automatically fall through to Express middleware.
 
 ## Install
 
-`npm install @wooksjs/express-adapter @wooksjs/event-http`
-
-## Usage
-
-There are two options to use express with wooks
-
-### 1. Adapter for express API:
-This one will modify express `get`, `post`, ..., methods. Take this one if you want to keep using express app API.
-```ts
-import express from 'express'
-import { applyExpressAdapter } from '@wooksjs/express-adapter'
-import { useBody } from '@wooksjs/http-body'
-import { HttpError } from '@wooksjs/event-http'
-import { useRouteParams } from '@wooksjs/event-core'
-
-const app = express()
-
-applyExpressAdapter(app)
-
-app.get('/test/:param', () => {
-    const { get } = useRouteParams()
-    return { message: 'it works', param: get('param') }
-})
-
-app.post('/post', () => {
-    const { parseBody } = useBody()
-    return parseBody()
-})
-
-app.get('/error', () => {
-    throw new HttpError(400, 'test error')
-})
-
-app.listen(3000, () => console.log('listening 3000'))
+```bash
+npm install @wooksjs/express-adapter @wooksjs/event-http wooks express
 ```
 
-### 2. Adapter for WooksHttp API:
-This one does not modify anything. It just applies express middleware and reroutes requests through wooks. Use this one if you want to use wooks app API (compatible with [@moostjs/event-http](https://www.npmjs.com/package/@moostjs/event-http))
+## Quick Start
 
 ```ts
 import express from 'express'
 import { WooksExpress } from '@wooksjs/express-adapter'
-import { useBody } from '@wooksjs/http-body'
-import { HttpError } from '@wooksjs/event-http'
-import { useRouteParams } from '@wooksjs/event-core'
+import { useRouteParams, useRequest, HttpError } from '@wooksjs/event-http'
 
-const expressApp = express()
+const app = express()
+const wooks = new WooksExpress(app)
 
-const wooksApp = new WooksExpress(expressApp, { raise404: true })
-
-wooksApp.get('/test/:param', () => {
+// Return values become the response body
+wooks.get('/hello/:name', () => {
     const { get } = useRouteParams()
-    return { message: 'it works', param: get('param') }
+    return { hello: get('name') }
 })
 
-wooksApp.post('/post', () => {
-    const { parseBody } = useBody()
-    return parseBody()
+// Async handlers work out of the box
+wooks.post('/upload', async () => {
+    const { rawBody } = useRequest()
+    const body = await rawBody()
+    return { received: body.length }
 })
 
-wooksApp.get('/error', () => {
-    throw new HttpError(400, 'test error')
+// Throw HttpError for error responses
+wooks.get('/protected', () => {
+    throw new HttpError(403, 'Forbidden')
 })
 
-wooksApp.listen(3000, () => console.log('listening 3000'))
+app.listen(3000, () => console.log('listening on 3000'))
 ```
 
+## How It Works
 
-⚠️ Check out official [wooks documentation](https://wooksjs.org/guide/http/express.html).
+`WooksExpress` extends `WooksHttp` and registers itself as Express middleware. When a request comes in:
+
+1. Wooks checks if a matching route is registered
+2. If matched — the Wooks handler runs with full composable support
+3. If not matched — the request falls through to the next Express middleware
+
+This means you can **mix Wooks routes with regular Express routes and middleware**:
+
+```ts
+import express from 'express'
+import { WooksExpress } from '@wooksjs/express-adapter'
+import cors from 'cors'
+
+const app = express()
+
+// Express middleware works as usual
+app.use(cors())
+app.use(express.json())
+
+// Wooks handles these routes
+const wooks = new WooksExpress(app)
+wooks.get('/api/users', () => {
+    return [{ id: 1, name: 'Alice' }]
+})
+
+// Express handles this route
+app.get('/legacy', (req, res) => {
+    res.send('handled by express')
+})
+
+app.listen(3000)
+```
+
+## API
+
+### `new WooksExpress(expressApp, options?)`
+
+Creates a new adapter instance and registers Wooks middleware on the Express app.
+
+| Option           | Type                       | Default | Description                                                                      |
+| ---------------- | -------------------------- | ------- | -------------------------------------------------------------------------------- |
+| `raise404`       | `boolean`                  | `false` | Return 404 from Wooks for unmatched routes instead of falling through to Express |
+| `onNotFound`     | `() => unknown`            | —       | Custom handler for unmatched routes                                              |
+| `logger`         | `TConsoleBase`             | —       | Custom logger instance                                                           |
+| `router`         | `object`                   | —       | Router options (`ignoreTrailingSlash`, `ignoreCase`, `cacheLimit`)               |
+| `requestLimits`  | `object`                   | —       | Default request body size limits                                                 |
+| `defaultHeaders` | `Record<string, string>`   | —       | Headers added to every response                                                  |
+| `responseClass`  | `typeof WooksHttpResponse` | —       | Custom response class                                                            |
+
+### Route Methods
+
+```ts
+wooks.get(path, handler)
+wooks.post(path, handler)
+wooks.put(path, handler)
+wooks.patch(path, handler)
+wooks.delete(path, handler)
+wooks.head(path, handler)
+wooks.options(path, handler)
+wooks.all(path, handler)
+```
+
+Handlers take **no arguments** — use composables to access request data:
+
+```ts
+wooks.get('/users/:id', () => {
+    const { get } = useRouteParams()
+    const { method, url, rawBody, getIp } = useRequest()
+    const headers = useHeaders()
+    const response = useResponse()
+
+    response.setHeader('x-custom', 'value')
+    return { id: get('id') }
+})
+```
+
+### `wooks.listen(port)`
+
+Starts the Express server and returns a promise that resolves when listening.
+
+```ts
+await wooks.listen(3000)
+```
+
+### `wooks.close()`
+
+Stops the server.
+
+```ts
+await wooks.close()
+```
+
+## Available Composables
+
+These come from `@wooksjs/event-http` and work inside any Wooks handler:
+
+| Composable           | Purpose                                     |
+| -------------------- | ------------------------------------------- |
+| `useRequest()`       | Request method, URL, headers, body, IP      |
+| `useRouteParams()`   | Route parameters (`:id`, etc.)              |
+| `useHeaders()`       | Request headers                             |
+| `useResponse()`      | Set status, headers, cookies, cache control |
+| `useCookies()`       | Read request cookies                        |
+| `useUrlParams()`     | URL query parameters                        |
+| `useAuthorization()` | Parse Authorization header                  |
+| `useAccept()`        | Check Accept header                         |
+| `useLogger()`        | Event-scoped logger                         |
+
+See the [Wooks documentation](https://wooks.moost.org) for full composable reference.
+
+## Development
+
+```bash
+npm install       # install dependencies
+npm test          # run tests (vitest)
+npm run build     # build for distribution
+npm run lint      # lint with oxlint
+npm run fmt       # format with oxfmt
+```
+
+## License
+
+[MIT](./LICENSE)

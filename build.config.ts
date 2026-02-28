@@ -1,17 +1,10 @@
 import { defineBuildConfig } from 'unbuild'
-import constants from './build.constants'
 
 export default defineBuildConfig({
     declaration: true,
     rollup: {
-      emitCJS: true,
-      inlineDependencies: true,
-      replace: {
-          values: constants,
-          preventAssignment: true
-      },
+        emitCJS: true,
     },
-    entries: [
-      'src/index'
-    ],
-  })
+    externals: ['@wooksjs/event-http', '@wooksjs/event-core', 'wooks', 'express'],
+    entries: ['src/index'],
+})

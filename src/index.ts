@@ -1,2 +1,2 @@
-export * from './express-adapter'
-export * from './wooks-express'
+export { WooksExpress } from './wooks-express'
+export type { TWooksExpressOptions } from './wooks-express'
